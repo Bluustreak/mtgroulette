@@ -1,0 +1,20 @@
+.container{
+    width: 400px;
+    height: 450px;
+    border-radius: 10px;
+    background-color:orange;
+}
+#deck{
+    height: 380px;
+    resize: none;
+}
+.title {
+    text-align: center;
+    font-size: 15px;
+    border-radius: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: rgb(245, 226, 199);
+    margin: 2px;
+    outline: 2px;
+}
