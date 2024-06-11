@@ -17,10 +17,10 @@
                 <form id="deckForm">
                     <div class="form-group">
                         <h1 class="title" for="colors">Enter your commander colors here:</h1>
-                        <input type="text" id="colors" name="colors" class="form-control" value="WBGUR">
+                        <input type="text" id="colors" name="colors" class="form-control" value="" placeholder="WBGUR">
                         </br>
                         <h1 class="title">Keywords</h1>
-                        <input id="id_keywordsTextField" type="text" value="keywords here, space separated">
+                        <input id="id_keywordsTextField" type="text" value="" placeholder="Enter keywords here">
                     </div>
                 </br>
                     <center><button type="submit" class="btn btn-primary" onclick="buttonClick()">Generate Deck</button></center>
@@ -33,6 +33,26 @@
         </div>
     </div>
 
+
+    <script>
+        let inputField =document.getElementById("colors")
+        inputField.addEventListener('input', function()
+        {
+            // Get the current input
+            inputField.value = inputField.value.toUpperCase();
+            // Check if the input is in the dictionary of allowed words
+            if (containsOnlyCorrectColors(inputField.value)) 
+            {
+                // If it is, set the color to black
+                inputField.style.color = 'black';
+            } 
+            else 
+            {
+                // If it's not, set the color to red
+                inputField.style.color = 'red';
+            }
+        });
+    </script>
     
 </body>
 
