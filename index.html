@@ -5,7 +5,7 @@
     <title>Scryfall Deck Generator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="styles.css">
-    <script src="scripts.js"></script>
+    
 </head>
 
 <body>
@@ -16,8 +16,31 @@
                 </br>
                 <form id="deckForm">
                     <div class="form-group">
-                        <h1 class="title" for="colors">Enter your commander colors here:</h1>
-                        <input type="text" id="colors" name="colors" class="form-control" value="" placeholder="WBGUR">
+                        <h1 class="title" for="colors">Your commander colors</h1>
+                        <div class="parent-checkbox-container">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBW">
+                                <label class="checkbox-label" for="myCheckbox">W</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBB">
+                                <label class="checkbox-label" for="myCheckbox">B</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBG">
+                                <label class="checkbox-label" for="myCheckbox">G</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBU">
+                                <label class="checkbox-label" for="myCheckbox">U</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBR">
+                                <label class="checkbox-label" for="myCheckbox">R</label>
+                            </div>
+                        </div>
+                        
+                        
                         </br>
                         <h1 class="title">Keywords</h1>
                         <input id="id_keywordsTextField" type="text" value="" placeholder="Enter keywords here">
@@ -34,25 +57,8 @@
     </div>
 
 
-    <script>
-        let inputField =document.getElementById("colors")
-        inputField.addEventListener('input', function()
-        {
-            // Get the current input
-            inputField.value = inputField.value.toUpperCase();
-            // Check if the input is in the dictionary of allowed words
-            if (containsOnlyCorrectColors(inputField.value)) 
-            {
-                // If it is, set the color to black
-                inputField.style.color = 'black';
-            } 
-            else 
-            {
-                // If it's not, set the color to red
-                inputField.style.color = 'red';
-            }
-        });
-    </script>
+   
+    <script src="scripts.js"></script>
     
 </body>
 
