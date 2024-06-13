@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Scryfall Deck Generator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container" style="padding:20px;">
+        <div class="row">
+            <div class="col">
+                <h1 class="title">Scryfall Deck Generator</h1>
+                </br>
+                <form id="deckForm">
+                    <div class="form-group">
+                        <h1 class="title" for="colors">Your commander colors</h1>
+                        <div class="parent-checkbox-container">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBW">
+                                <label class="checkbox-label" >W</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBB">
+                                <label class="checkbox-label" >B</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBG">
+                                <label class="checkbox-label" >G</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBU">
+                                <label class="checkbox-label" >U</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBR">
+                                <label class="checkbox-label">R</label>
+                            </div>
+                        </div>
+                        </br>
+                        <h1 class="title">Keywords</h1>
+                        <input id="id_keywordsTextField" type="text" value="" placeholder="Enter keywords here">
+                    </div>
+                </br>
+                    <center><button type="submit" class="btn btn-primary" onclick="buttonClick()">Generate Deck</button></center>
+                </form>
+            </div>
+            <div class="col">
+                <h1 class="title">Generated Deck</h1>
+                <textarea id="deck" class="form-control" rows="10" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+
+
+        function buttonClick() {
+            event.preventDefault();
+
+            let deck = [];
+
+            // reads the inputted keywords as a [kw1, kw2, ...]
+            let keywords = (document.getElementById("id_keywordsTextField").value).split(" ");
+
+            let UI_commanderColors = readCommanderColors();
+
+            UI_order = "asc";
+
+            // default values for a deck, based on "grave danger"
+            let n_cre = 29;
+            let n_sor = 12;
+            let n_art = 9;
+            let n_ins = 5;
+            let n_enc = 4;
+            let n_pla = 1;
+
+
+            // adding each card type to the deck
+            temp = getCommander(UI_commanderColors, UI_order, keywords);
+            deck.push(temp);
+            //deck.push(getCards(CREATURE, n_cre, UI_commanderColors, UI_order, keywords))
+            //deck.push(getCards(SORCERY, n_sor, keywords))
+            //deck.push(getCards(ARTIFACT, n_art, keywords))
+            //deck.push(getCards(INSTANT, n_ins, keywords))
+            //deck.push(getCards(ENCHANTMENT, n_enc, keywords))
+            //deck.push(getCards(PLANESWALKER, n_pla, keywords))
+
+        };
+
+
+            async function sendRequestGetJson(query) {
+                    query = "https://api.scryfall.com/cards/search?order=cmc&q=c%3Ared+pow%3D3";
+                    //query = "httpbin.org/get"
+
+                    try {
+                        const response = await fetch(query);
+                        console.log(response);
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const jsonData = await response.json();
+                        console.log(jsonData);
+
+                        alert("returned from function "+jsonData);
+                        //sleep(0.5);
+
+                        return (jsonData);
+                    } catch (error) {
+                        console.error('There was a problem with the fetch operation: ', error);
+                    }
+                }
+
+
+        function parseJSON(JSONdata) {
+                // parses raw JSON into card names
+                var result = [];
+                for (var i = 0; i < JSONdata.data.length; i++) {
+                    var card = JSONdata.data[i];
+                    alert(card);
+                    var obj = {
+                        name: card.name
+                    };
+                    result.push(obj);
+                }
+                return result;
+            }
+
+
+
+        function getCommander(UI_commanderColors, UI_order, UIkeywords) {
+            let KWplaceholder = "";
+            if (UIkeywords != "")
+            {
+                for (let kw of UIkeywords) {
+                    KWplaceholder += `+lore%3A${kw}`;
+                }
+            }
+            
+            let query =  `https://api.scryfall.com/cards/search?as=grid&extras=true&lang=any&order=${UI_order}&q=%28type%3Acreature+type%3Alegendary%29+color%3DBR+%28game%3Apaper%29${KWplaceholder}&unique=cards`;
+            let JSONdata = sendRequestGetJson(query);
+            alert("returned JSONdata from function " + JSONdata);
+
+            let cards = parseJSON(JSONdata);
+            alert("returned cards from function " + cards);
+
+            card = getOneRandomCard(cards);
+            deck.push(card);
+        }
+
+
+        // helper functions:
+
+
+
+
+
+
+
+
+
+        function readCommanderColors() {
+            let checkboxW = document.getElementById("CBW");
+            let checkboxB = document.getElementById("CBB");
+            let checkboxG = document.getElementById("CBG");
+            let checkboxU = document.getElementById("CBU");
+            let checkboxR = document.getElementById("CBR");
+
+            let UI_commanderColors = "";
+            if (checkboxW.checked)
+                UI_commanderColors += "W";
+            if (checkboxB.checked)
+                UI_commanderColors += "B";
+            if (checkboxG.checked)
+                UI_commanderColors += "G";
+            if (checkboxU.checked)
+                UI_commanderColors += "U";
+            if (checkboxR.checked)
+                UI_commanderColors += "R";
+
+            return UI_commanderColors;
+        }
+        function queryComposer(UI_order, UI_cardtype, UI_commanderColors, UIkeywords) {
+            // if the user has picked any keywords, those will be added, if not, just a empty string litteral
+            let KWplaceholder = ""
+            for (let kw of UIkeywords) {
+                KWplaceholder += `+lore%3A${kw}`;
+            }
+            let query = `https://api.scryfall.com/cards/search?as=grid&extras=true&lang=any&order=${UI_order}&q=type%3A${UI_cardtype}+commander%3A${UI_commanderColors}+%28game%3Apaper%29${KWplaceholder}&unique=cards`;
+        }
+
+        function sleep(milliseconds) {
+            const date = Date.now();
+            while (Date.now() - date < milliseconds) { }
+        }
+
+        function getOneRandomCard(cards) {
+            let randnum = Math.floor(Math.random() * 60);
+            return cards[randnum];
+        }
+        function getNcards(cards, N) {
+            // does not repeat cards
+            let local_cards = [];
+            while (local_cards.length() < N) {
+                card = getOneRandomCard(cards)
+                if (local_cards.find(card) == undefined) // if the card is not in the deck, add it
+                {
+                    local_cards.push(card);
+                }
+            }
+            return local_cards;
+        }
+        function getCards(cardType, N, UI_commanderColors, UI_order, UIkeywords) {
+            let query = queryComposer(UI_order, cardType, UI_commanderColors, UIkeywords);
+            let JSONdata = sendRequestGetJson(query);
+            let cards = parseJSON(JSONdata);
+            cards = getNcards(cards, N)
+
+            return cards; // returns names, basically
+
+            if (commander == true) {
+                let query = `https://scryfall.com/search?as=grid&extras=true&lang=any&order=${UI_order}}&q=type%3A${UI_cardtype}+commander%3A${UI_commanderColors}+%28game%3Apaper%29${KWplaceholder}&unique=cards`;
+            }
+        }
+</script>
+
+</html>

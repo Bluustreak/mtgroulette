@@ -5,7 +5,6 @@
     <title>Scryfall Deck Generator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="styles.css">
-    
 </head>
 
 <body>
@@ -20,33 +19,32 @@
                         <div class="parent-checkbox-container">
                             <div class="checkbox-container">
                                 <input type="checkbox" id="CBW">
-                                <label class="checkbox-label" for="myCheckbox">W</label>
+                                <label class="checkbox-label">W</label>
                             </div>
                             <div class="checkbox-container">
                                 <input type="checkbox" id="CBB">
-                                <label class="checkbox-label" for="myCheckbox">B</label>
+                                <label class="checkbox-label">B</label>
                             </div>
                             <div class="checkbox-container">
                                 <input type="checkbox" id="CBG">
-                                <label class="checkbox-label" for="myCheckbox">G</label>
+                                <label class="checkbox-label">G</label>
                             </div>
                             <div class="checkbox-container">
                                 <input type="checkbox" id="CBU">
-                                <label class="checkbox-label" for="myCheckbox">U</label>
+                                <label class="checkbox-label">U</label>
                             </div>
                             <div class="checkbox-container">
                                 <input type="checkbox" id="CBR">
-                                <label class="checkbox-label" for="myCheckbox">R</label>
+                                <label class="checkbox-label">R</label>
                             </div>
                         </div>
-                        
-                        
                         </br>
                         <h1 class="title">Keywords</h1>
                         <input id="id_keywordsTextField" type="text" value="" placeholder="Enter keywords here">
                     </div>
-                </br>
-                    <center><button type="submit" class="btn btn-primary" onclick="buttonClick()">Generate Deck</button></center>
+                    </br>
+                    <center><button type="submit" class="btn btn-primary" onclick="buttonClick()">Generate Deck</button>
+                    </center>
                 </form>
             </div>
             <div class="col">
@@ -56,10 +54,132 @@
         </div>
     </div>
 
-
-   
-    <script src="scripts.js"></script>
-    
 </body>
+
+<script>
+    async function buttonClick(event) {
+        //event.preventDefault();
+
+        let deck = [];
+
+        // reads the inputted keywords as a [kw1, kw2, ...]
+        let keywords = (document.getElementById("id_keywordsTextField").value).split(" ");
+        alert(0)
+        let UI_commanderColors = readCommanderColors();
+
+        UI_order = "asc";
+
+        // default values for a deck, based on "grave danger"
+        let n_cre = 29;
+        let n_sor = 12;
+        let n_art = 9;
+        let n_ins = 5;
+        let n_enc = 4;
+        let n_pla = 1;
+
+        // adding each card type to the deck
+        getCommander(UI_commanderColors, UI_order, keywords, deck); // Pass the deck array to getCommander
+        // Add the rest of the card fetching here similarly
+        // await getCards(CREATURE, n_cre, UI_commanderColors, UI_order, keywords, deck);
+        // await getCards(SORCERY, n_sor, keywords, deck);
+        // await getCards(ARTIFACT, n_art, keywords, deck);
+        // await getCards(INSTANT, n_ins, keywords, deck);
+        // await getCards(ENCHANTMENT, n_enc, keywords, deck);
+        // await getCards(PLANESWALKER, n_pla, keywords, deck);
+
+        // Display the generated deck
+        document.getElementById("deck").value = deck.map(card => card.name).join('\n');
+    }
+
+    async function sendRequestGetJson(query) {
+        alert(query);
+
+        try {
+            const response = await fetch(query);
+            console.log(response);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const jsonData = await response.json();
+            alert("BEHOLD")
+            console.log(jsonData);
+
+            alert("returned from function " + JSON.stringify(jsonData)); // Use JSON.stringify
+
+            return jsonData;
+        } catch (error) {
+            console.error('There was a problem with the fetch operation: ', error);
+        }
+    }
+
+    function parseJSON(JSONdata) {
+        // parses raw JSON into card names
+        alert("parse");
+        alert(JSONdata);
+        var result = [];
+        for (var i = 0; i < JSONdata.data.length; i++) {
+            var card = JSONdata.data[i];
+            
+            result.push(card.name);
+            alert(card.name);
+        }
+        return result;
+    }
+
+    async function getCommander(UI_commanderColors, UI_order, UIkeywords, deck) {
+        alert(1)
+        let KWplaceholder = "";
+        if (UIkeywords.length > 0) {
+            for (let kw of UIkeywords) {
+                KWplaceholder += `+lore%3A${kw}`;
+            }
+        }
+
+        let query = `https://api.scryfall.com/cards/search?as=grid&extras=true&lang=any&order=${UI_order}&q=%28type%3Acreature+type%3Alegendary%29+color%3D${UI_commanderColors}+%28game%3Apaper%29${KWplaceholder}&unique=cards`;
+        query = "https://api.scryfall.com/cards/search?order=cmc&q=c%3AR";
+
+
+        alert(2);
+        let JSONdata = await sendRequestGetJson(query); // Await the result of the async function
+        alert(3)
+        alert("returned JSONdata from function " + JSON.stringify(JSONdata));
+        // might work to this part
+        alert(4)
+        let cards = parseJSON(JSONdata);
+        //alert("returned cards from function " + JSON.stringify(cards));
+        alert(5)
+        let card = getOneRandomCard(cards);
+        deck.push(card);
+    }
+
+    function readCommanderColors() {
+        let checkboxW = document.getElementById("CBW");
+        let checkboxB = document.getElementById("CBB");
+        let checkboxG = document.getElementById("CBG");
+        let checkboxU = document.getElementById("CBU");
+        let checkboxR = document.getElementById("CBR");
+
+        let UI_commanderColors = "";
+        if (checkboxW.checked) UI_commanderColors += "W";
+        if (checkboxB.checked) UI_commanderColors += "B";
+        if (checkboxG.checked) UI_commanderColors += "G";
+        if (checkboxU.checked) UI_commanderColors += "U";
+        if (checkboxR.checked) UI_commanderColors += "R";
+
+        return UI_commanderColors;
+    }
+
+    function getOneRandomCard(cards) {
+        let randnum = Math.floor(Math.random() * cards.length);
+        return cards[randnum];
+    }
+
+    function sleep(milliseconds) {
+        const date = Date.now();
+        while (Date.now() - date < milliseconds) { }
+    }
+</script>
 
 </html>
