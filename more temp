@@ -1,0 +1,110 @@
+
+
+
+
+
+
+    
+    setTimeout
+
+        document.getElementById('id_clickButton').addEventListener('click', function (event) {
+        event.preventDefault(); // Prevents the default behavior of the button click (such as form submission)
+
+
+        let deck = [];
+
+        // reads the inputted keywords as a [kw1, kw2, ...]
+        let keywords = (document.getElementById("id_keywordsTextField").value).split(" ");
+        let UI_commanderColors = readCommanderColors();
+
+        UI_order = "asc";
+
+        // default values for a deck, based on "grave danger"
+        let n_cre = 29;
+        let n_sor = 12;
+        let n_art = 9;
+        let n_ins = 5;
+        let n_enc = 4;
+        let n_pla = 1;
+
+        
+            // everything here is delayed a little to get the 
+            getCommander(UI_commanderColors, UI_order, keywords, deck); // Pass the deck array to getCommander
+            // Add the rest of the card fetching here similarly
+            // await getCards(CREATURE, n_cre, UI_commanderColors, UI_order, keywords, deck);
+            // await getCards(SORCERY, n_sor, keywords, deck);
+            // await getCards(ARTIFACT, n_art, keywords, deck);
+            // await getCards(INSTANT, n_ins, keywords, deck);
+            // await getCards(ENCHANTMENT, n_enc, keywords, deck);
+            // await getCards(PLANESWALKER, n_pla, keywords, deck);
+            // Display the generated deck
+            //document.getElementById("deck").value = deck.map(card => card.name).join('\n');
+        
+        // adding each card type to the deck
+        
+    })
+
+   
+    function fetchfromscryfall(query)
+    {
+        let fetchedData = null;
+        fetch(query)
+            .then(response => response.json())
+            .then(data => {
+                fetchedData = data.data; // Assigning the fetched data to fetchedData variable
+                //console.log(fetchedData); // Logging the fetched data to console
+            });
+            return fetchedData;
+
+    }
+
+    function doJsonstuff(data)
+    {
+        console.log(data[0]);
+    }
+    function getCommander(UI_commanderColors, UI_order, UIkeywords, deck) 
+    {
+    let query = `https://api.scryfall.com/cards/search?q=c=BW+t:legendary+t:creature&sorting=asc&order=released`;
+        let fetchedData = null;
+        fetch(query)
+            .then(response => response.json())
+            .then(data => fetchedData = data.data);
+
+    setTimeout(() => { 
+    let KWplaceholder = "";
+        
+
+        let query = `https://api.scryfall.com/cards/search?q=c=BW+t:legendary+t:creature&sorting=asc&order=released`;
+        console.log(query)
+
+        const data = fetchfromscryfall(query)
+        doJsonstuff(data);
+    }, 1000);
+    }
+
+    function readCommanderColors() {
+        let checkboxW = document.getElementById("CBW");
+        let checkboxB = document.getElementById("CBB");
+        let checkboxG = document.getElementById("CBG");
+        let checkboxU = document.getElementById("CBU");
+        let checkboxR = document.getElementById("CBR");
+
+        let UI_commanderColors = "";
+        if (checkboxW.checked) UI_commanderColors += "W";
+        if (checkboxB.checked) UI_commanderColors += "B";
+        if (checkboxG.checked) UI_commanderColors += "G";
+        if (checkboxU.checked) UI_commanderColors += "U";
+        if (checkboxR.checked) UI_commanderColors += "R";
+
+        return UI_commanderColors;
+    }
+
+    function getOneRandomCard(cards) {
+        let randnum = Math.floor(Math.random() * cards.length);
+        return cards[randnum];
+    }
+
+    function sleep(milliseconds) {
+        const date = Date.now();
+        while (Date.now() - date < milliseconds) { }
+    }
