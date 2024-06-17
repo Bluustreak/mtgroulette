@@ -108,3 +108,15 @@
         const date = Date.now();
         while (Date.now() - date < milliseconds) { }
     }
+
+
+
+
+
+    ,
+                api_creatures,
+                api_artifacts,
+                api_instants,
+                api_enchantments,
+                api_sorceries,
+                api_planeswalkers

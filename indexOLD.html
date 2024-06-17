@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Scryfall Deck Generator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container" style="padding:20px;">
+        <div class="row">
+            <div class="col">
+                <h1 class="title">Scryfall Deck Generator</h1>
+                </br>
+                <form id="deckForm">
+                    <div class="form-group">
+                        <h1 class="title" for="colors">Your commander colors</h1>
+                        <div class="parent-checkbox-container">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBW">
+                                <label class="checkbox-label">W</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBB">
+                                <label class="checkbox-label">B</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBG">
+                                <label class="checkbox-label">G</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBU">
+                                <label class="checkbox-label">U</label>
+                            </div>
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="CBR">
+                                <label class="checkbox-label">R</label>
+                            </div>
+                        </div>
+                        </br>
+                        <h1 class="title">Keywords</h1>
+                        <input id="id_keywordsTextField" type="text" value="" placeholder="Enter keywords here">
+                    </div>
+                    </br>
+                    <center><button id="id_clickButton" class="btn btn-primary">Generate Deck</button>
+                    </center>
+                </form>
+            </div>
+            <div class="col">
+                <h1 class="title">Generated Deck</h1>
+                <textarea id="deck" class="form-control" rows="10" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    document.getElementById('id_clickButton').addEventListener('click', function (event) 
+    {
+            event.preventDefault(); // Prevents the default behavior of the button click (such as form submission)
+
+        let checkboxW = document.getElementById("CBW");
+        let checkboxB = document.getElementById("CBB");
+        let checkboxG = document.getElementById("CBG");
+        let checkboxU = document.getElementById("CBU");
+        let checkboxR = document.getElementById("CBR");
+
+        let UI_commanderColors = "";
+        if (checkboxW.checked) UI_commanderColors += "W";
+        if (checkboxB.checked) UI_commanderColors += "B";
+        if (checkboxG.checked) UI_commanderColors += "G";
+        if (checkboxU.checked) UI_commanderColors += "U";
+        if (checkboxR.checked) UI_commanderColors += "R";
+
+        let deck = [];
+        let delay = 2000;
+        let m = 1;
+        setTimeout(() => {
+            getCommander(UI_commanderColors);
+        }, delay * m++);
+        setTimeout(() => {
+            getCards("creature", UI_commanderColors);
+        }, delay * m++);
+        setTimeout(() => {
+            getCards("artifact", UI_commanderColors);
+        }, delay * m++);
+        setTimeout(() => {
+            //getCards("enchantment", "BW");
+        }, delay * m++);
+        setTimeout(() => {
+            //getCards("planeswalker", "BW");
+        }, delay * m++);
+        setTimeout(() => {
+            //getCards("sorcery", "BW");
+        }, delay * m++);
+
+
+    })
+
+
+    function getCommander(UI_commanderColors, sorting = "asc", order = "released") {
+                let deck_textbox = document.getElementById("deck");
+        let v = null;
+        let query = `https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature&sorting=${sorting}&order=${order}`;
+        fetch(query)
+            .then(response => response.json())
+            .then(data => v = (JSON.parse(JSON.stringify(data.data))));
+        setTimeout(() => {
+            randInt = Math.floor(Math.random() * v.length);
+            console.log(v[randInt].name);
+            deck_textbox.value += "1x " + v[randInt].name + "\n";
+        }, 200);
+    }
+    function getCards(cardType, UI_commanderColors, amount = 5, sorting = "asc", order = "released") {
+                let deck_textbox = document.getElementById("deck");
+
+        console.log("\nfetching " + cardType + "s: \n")
+        let v = null;
+        let query = `https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:${cardType}&sorting=${sorting}&order=${order}`;
+        fetch(query)
+            .then(response => response.json())
+            .then(data => v = (JSON.parse(JSON.stringify(data.data))));
+        setTimeout(() => {
+            let subset = [];
+            while (subset.length < amount) {
+                randInt = Math.floor(Math.random() * v.length);
+                let cardname = v[randInt].name;
+                if (subset.indexOf(cardname) == -1) {
+                    subset.push(cardname);
+                    console.log(cardname);
+                    deck_textbox.value += "1x " + cardname + "\n";
+
+                }
+
+            }
+
+        }, 200);
+    }
+
+
+
+
+
+</script>
+
+</html>
