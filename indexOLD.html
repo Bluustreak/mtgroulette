@@ -75,26 +75,7 @@
         if (checkboxR.checked) UI_commanderColors += "R";
 
         let deck = [];
-        let delay = 2000;
-        let m = 1;
-        setTimeout(() => {
-            getCommander(UI_commanderColors);
-        }, delay * m++);
-        setTimeout(() => {
-            getCards("creature", UI_commanderColors);
-        }, delay * m++);
-        setTimeout(() => {
-            getCards("artifact", UI_commanderColors);
-        }, delay * m++);
-        setTimeout(() => {
-            //getCards("enchantment", "BW");
-        }, delay * m++);
-        setTimeout(() => {
-            //getCards("planeswalker", "BW");
-        }, delay * m++);
-        setTimeout(() => {
-            //getCards("sorcery", "BW");
-        }, delay * m++);
+
 
 
     })
@@ -103,7 +84,8 @@
     function getCommander(UI_commanderColors, sorting = "asc", order = "released") {
                 let deck_textbox = document.getElementById("deck");
         let v = null;
-        let query = `https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature&sorting=${sorting}&order=${order}`;
+                   //https://api.scryfall.com/cards/search?as=grid&extras=true&lang=any&order=name&q=type%3Ainstant+commander%3AWUBRG+%28game%3Apaper%29+lore%3Akeykeykeykey&unique=cards
+        let query = `https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature+lore%3A${KW}&sorting=${sorting}&order=${order}`;
         fetch(query)
             .then(response => response.json())
             .then(data => v = (JSON.parse(JSON.stringify(data.data))));

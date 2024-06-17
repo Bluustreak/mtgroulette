@@ -42,6 +42,7 @@
                         </br>
                         <h1 class="title">Keywords</h1>
                         <input id="id_keywordsTextField" type="text" value="" placeholder="Enter keywords here">
+                        <h8>(be very careful)</h8>
                     </div>
                     </br>
                     <center><button id="id_clickButton" class="btn btn-primary">Generate Deck</button>
@@ -61,9 +62,17 @@
         document.getElementById('id_clickButton').addEventListener('click', function (event) {
             event.preventDefault(); // Prevents the default behavior of the button click (such as form submission)
 
+            let UI_KW = (document.getElementById("id_keywordsTextField").value).split(' ');
+            let KW = "";
+            for (let kwn = 0; kwn < UI_KW.length; kwn++) {
+                if (UI_KW[kwn] != "")
+                    KW += `+lore%3A${UI_KW[kwn]}`;
+            }
+
             let UI_commanderColors = "";
             let sorting = "asc";
             let order = "cmc"
+            let deck = [];
 
             let checkboxW = document.getElementById("CBW");
             let checkboxB = document.getElementById("CBB");
@@ -77,60 +86,84 @@
             if (checkboxU.checked) UI_commanderColors += "U";
             if (checkboxR.checked) UI_commanderColors += "R";
 
-            //http://date.jsontest.com
-            async function fetchCards(url) {
-                try {
-                    let response = await fetch(url);
-                    console.log('await:', response.status.toString());
+            if (UI_commanderColors != "") {
 
-                    let data = await response.json();
-                    return data;
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                }
-            }
 
-            async function printCards(apiUrls) {
-                let deck = [];
-                for (let i = 0; i < apiUrls.length; i++) // apiUrls[x] is the [card api url, card amount]
-                {
-                    setTimeout(async () => {
-                        let pageOfCards = await fetchCards(apiUrls[i][0]);
-                        for (let cardAmount = 0; cardAmount < apiUrls[i][1]; cardAmount++) // apiUrls[i] is current card type
-                        {
-                            //console.log("Cardtype: "+apiUrls[i]+ "\n")
-                            let randNum = Math.floor(Math.random() * pageOfCards['data'].length) // rand up to the the amount of cards found
-                            let cardName = pageOfCards['data'][randNum]['name'];
-                            if (!deck.includes(cardName)) {
-                                deck.push(cardName);
-                                console.log(cardName);
-                                document.getElementById("deck").value += cardName + "\n";
-                            }
+
+
+
+                //http://date.jsontest.com
+                async function fetchCards(url) {
+                    try {
+                        let response = await fetch(url);
+                        console.log('await:', response.status.toString());
+                        if (!response.ok) {
+                            document.getElementById("id_clickButton").innerHTML = "ERROR";
                         }
-
-                    }, i * 500); // 0.1 second = 100 milliseconds
+                        let data = await response.json();
+                        return data;
+                    }
+                    catch (error) {
+                        console.error('Error fetching data:', error);
+                    }
                 }
+
+                async function printCards(apiUrls) {
+                    for (let i = 0; i < apiUrls.length; i++) // apiUrls[x] is the [card api url, card amount]
+                    {
+                        setTimeout(async () => {
+                            let pageOfCards = await fetchCards(apiUrls[i][0]);
+                            for (let cardAmount = 0; cardAmount < apiUrls[i][1]; cardAmount++) // apiUrls[i] is current card type
+                            {
+                                let randNum = Math.floor(Math.random() * pageOfCards['data'].length) // rand up to the the amount of cards found
+                                let cardName = pageOfCards['data'][randNum]['name'];
+                                if (!deck.includes(cardName)) {
+                                    deck.push(cardName);
+                                    //console.log(cardName);
+                                    if (cardName.includes(" //")) {
+                                        let pos = cardName.indexOf(" //")
+                                        cardName=cardName.substring(0, pos);
+
+                                    }
+                            
+                                    if (i == 0)
+                                        cardName += " *CMDR*";
+                                    cardName += "\n";
+
+                                    document.getElementById("deck").value += cardName;
+                                }
+                            }
+
+                        }, i * 500); // 0.1 second = 100 milliseconds
+                    }
+                }
+
+                let n_cre = 29;
+                let n_sor = 12;
+                let n_art = 9;
+                let n_ins = 5;
+                let n_enc = 4;
+                let n_pla = 1;
+                let api_commander = [`https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature${KW}&sorting=${sorting}&order=${order}`, 1];
+                let api_creatures = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:creature${KW}&sorting=${sorting}&order=${order}`, 29];
+                let api_artifacts = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:artifact${KW}&sorting=${sorting}&order=${order}`, 9];
+                let api_instants = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:instant${KW}&sorting=${sorting}&order=${order}`, 5];
+                let api_enchantments = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:enchantment${KW}&sorting=${sorting}&order=${order}`, 4];
+                let api_sorceries = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:sorcery${KW}&sorting=${sorting}&order=${order}`, 12];
+                let api_planeswalkers = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:planeswalker${KW}&sorting=${sorting}&order=${order}`, 1];
+
+                printCards([
+                    api_commander,
+                    api_creatures,
+                    api_artifacts,
+                    api_enchantments,
+                    api_instants,
+                    api_sorceries,
+                    api_planeswalkers
+                ]);
             }
-
-            let n_cre = 29;
-            let n_sor = 12;
-            let n_art = 9;
-            let n_ins = 5;
-            let n_enc = 4;
-            let n_pla = 1;
-            let api_commander = [`https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature&sorting=${sorting}&order=${order}`, 1];
-            let api_creatures = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:creature&sorting=${sorting}&order=${order}`, 29];
-            let api_artifacts = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:artifact&sorting=${sorting}&order=${order}`, 9];
-            let api_instants = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:instant&sorting=${sorting}&order=${order}`, 5];
-            let api_enchantments = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:enchantment&sorting=${sorting}&order=${order}`, 4];
-            let api_sorceries = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:sorcery&sorting=${sorting}&order=${order}`, 12];
-            let api_planeswalkers = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:planeswalker&sorting=${sorting}&order=${order}`, 1];
-
-            printCards([
-                api_creatures,
-                api_artifacts
-            ]);
         })
+
     </script>
 </body>
 
