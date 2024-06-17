@@ -7,6 +7,7 @@
 #deck{
     height: 380px;
     resize: none;
+    font-size: 10px;
 }
 .title {
     text-align: center;
@@ -17,4 +18,18 @@
     background-color: rgb(245, 226, 199);
     margin: 2px;
     outline: 2px;
+}
+.parent-checkbox-container{
+    display: flex;
+    margin-left: 15px;
+}
+.checkbox-container {
+    margin-top: 5px;
+    margin-right: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.checkbox-label {
+    text-align: center;
 }
