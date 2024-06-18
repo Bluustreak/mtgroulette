@@ -38,7 +38,7 @@
                         </div>
                         </br>
                         <h1 class="title">Keywords</h1>
-                        <input id="id_keywordsTextField" type="text" value="" placeholder="Enter keywords here" disabled>
+                        <input id="id_keywordsTextField" type="text" value="" placeholder="tip: Be VERY broad" >
                     </div>
                     </br>
                     <center><button id="id_clickButton" class="btn btn-primary">Generate Deck</button></center>
@@ -70,15 +70,17 @@
                     
                     await waitAsecond();
 
-                    let response = fetch(`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:${cardtype}${KW}&sorting=${sorting}&order=${order}`); // returns a promise
+                    let response = fetch(`https://api.scryfall.com/cards/search?q=commander:${UI_commanderColors}+t:${cardtype}${KW}&sorting=${sorting}&order=${order}`); // returns a promise
                     let fetchedCards = await response; // waits until the resonse is fetched
                     if (fetchedCards.status != 200) {
                         console.log(`\ncould not find enough cards for <${cardtype}>, skipping keywords\n`)
-                        response = fetch(`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:${cardtype}&sorting=${sorting}&order=${order}`); // returns a promise
-                        fetchedCards = await response; // waits until the resonse is fetched
+                        response = fetch(`https://api.scryfall.com/cards/search?q=commander:${UI_commanderColors}+t:${cardtype}&sorting=${sorting}&order=${order}`); // returns a promise
+                        fetchedCards = await response; // waits until the new resonse is fetched
                     }
                     const fetchedCardsJSON = await fetchedCards.json();
                     const cards = fetchedCardsJSON['data'];
+
+                    deckElement.value += `\n${cardtype}:\n`;
                     for(let n = 0; n<amount; n++)
                     {
                         let cardName = cards[Math.floor(Math.random() * cards.length)].name;
@@ -137,15 +139,20 @@
 
                 return UI_commanderColors;
             }
-            async function getKeywords()
-            {
-                let UI_KW = (document.getElementById("id_keywordsTextField").value).split(' ');
-                let KW = "";
-                for (let kwn = 0; kwn < UI_KW.length; kwn++) {
-                    if (UI_KW[kwn] != "")
-                        KW += `+lore%3A${UI_KW[kwn]}`;
-                }
-                return UI_KW;
+            async function getKeywords() {
+                return new Promise((resolve, reject) => {
+                    try {
+                        let UI_KW = (document.getElementById("id_keywordsTextField").value).split(' ');
+                        let KW = "";
+                        for (let kwn = 0; kwn < UI_KW.length; kwn++) {
+                            if (UI_KW[kwn] !== "")
+                                KW += `+lore%3A${UI_KW[kwn]}`;
+                        }
+                        resolve(KW);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
             }
 
             function waitAsecond() {
