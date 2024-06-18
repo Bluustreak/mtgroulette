@@ -42,6 +42,8 @@
                     </div>
                     </br>
                     <center><button id="id_clickButton" class="btn btn-primary">Generate Deck</button></center>
+                </br>
+                <h2 id="verdict"></h2>
                 </form>
             </div>
             <div class="col">
@@ -68,17 +70,19 @@
                 // all the card fetching functions:
                 async function fetchCardtype(cardtype, amount) {
                     
-                    await waitAsecond();
+                    
 
                     let response = fetch(`https://api.scryfall.com/cards/search?q=commander:${UI_commanderColors}+t:${cardtype}${KW}&sorting=${sorting}&order=${order}`); // returns a promise
+                    await waitAsecond();
                     let fetchedCards = await response; // waits until the resonse is fetched
                     if (fetchedCards.status != 200) {
                         console.log(`\ncould not find enough cards for <${cardtype}>, skipping keywords\n`)
                         response = fetch(`https://api.scryfall.com/cards/search?q=commander:${UI_commanderColors}+t:${cardtype}&sorting=${sorting}&order=${order}`); // returns a promise
+                        await waitAsecond();
                         fetchedCards = await response; // waits until the new resonse is fetched
                     }
                     const fetchedCardsJSON = await fetchedCards.json();
-                    const cards = fetchedCardsJSON['data'];
+                    let cards = fetchedCardsJSON['data'];
 
                     //deckElement.value += `\n${cardtype}:\n`;
                     for(let n = 0; n<amount; n++)
@@ -86,7 +90,10 @@
                         let cardName = cards[Math.floor(Math.random() * cards.length)].name;
                         cardName = await cleanCardName(cardName);
                         if (deckElement.value.indexOf(cardName) == -1)
+                        {
                             deckElement.value += `1x ${cardName} \n`;
+                        }
+                            
                     }
                     
                 }
@@ -95,10 +102,12 @@
                 async function fetchCommander() {
 
                     let response = fetch(`https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature${KW}&sorting=${sorting}&order=${order}`); // returns a promise
+                    await waitAsecond();
                     let fetchedCards = await response; // waits until the resonse is fetched
                     if (fetchedCards.status != 200) {
                         console.log(`\ncould not find enough cards for <commander>, skipping keywords\n`)
                         response = fetch(`https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature&sorting=${sorting}&order=${order}`); // returns a promise
+                        await waitAsecond();
                         fetchedCards = await response; // waits until the new resonse is fetched
                     }
                     const fetchedCardsJSON = await fetchedCards.json();
@@ -117,6 +126,7 @@
                 await fetchCardtype("instant", 5);
                 await fetchCardtype("enchantment", 4);
                 await fetchCardtype("planeswalker", 1);
+                addLands(UI_commanderColors)
             }
             createDeck();
 
@@ -175,6 +185,35 @@
                 }
                 return cardName;
             }
+            function addLands(cols)
+            {
+                let nofCards = deckElement.value.split("\n").length-1;
+                let rest = (100-nofCards) % cols.length; // for 40lands, 3 colors, there's 1 rest
+                let nofEachCol = Math.floor((100 - nofCards) /cols.length);
+                let landsAdded = 0;
+                for(let c of cols)
+                {
+                    if(cols[cols.length-1] == c)
+                        nofEachCol+=rest;
+                    if(c == "W")
+                        deckElement.value+=`${nofEachCol}x Plains\n`;
+                    else if(c == "B")
+                        deckElement.value+=`${nofEachCol}x Swamp\n`;
+                    else if(c == "G")
+                        deckElement.value+=`${nofEachCol}x Forest\n`;
+                    else if(c == "U")
+                        deckElement.value+=`${nofEachCol}x Island\n`;
+                    else if(c == "R")
+                        deckElement.value+=`${nofEachCol}x Mountain\n`;
+                    landsAdded+=nofEachCol;
+                }
+                nofCards += landsAdded;
+                if (nofCards == 100)
+                {
+                    document.getElementById("verdict").outerHTML="OK, 100 cards done, refresh to go again :)";
+                }
+            }
+
         })
     </script>
     
