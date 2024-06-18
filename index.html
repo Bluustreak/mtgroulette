@@ -84,10 +84,7 @@
                     for(let n = 0; n<amount; n++)
                     {
                         let cardName = cards[Math.floor(Math.random() * cards.length)].name;
-                        if(cardName.indexOf(" //") != -1){
-                            let pos = cardName.indexOf(" //");
-                            cardName = cardName.substring(0, pos);
-                        }
+                        cardName = await cleanCardName(cardName);
                         if (deckElement.value.indexOf(cardName) == -1)
                             deckElement.value += `1x ${cardName} \n`;
                     }
@@ -103,10 +100,7 @@
                     const cards = fetchedCardsJSON['data'];
                     const randNum = Math.floor(Math.random() * cards.length);
                     let cardName = cards[randNum].name;
-                    if (cardName.indexOf(" //") != -1) {
-                        let pos = cardName.indexOf(" //");
-                        cardName = cardName.substring(0, pos);
-                    }
+                    cardName = await cleanCardName(cardName);
                     deckElement.value += `1x ${cardName} *CMDR*\n`;
                 }
 
@@ -136,7 +130,8 @@
                 if (checkboxG.checked) UI_commanderColors += "G";
                 if (checkboxU.checked) UI_commanderColors += "U";
                 if (checkboxR.checked) UI_commanderColors += "R";
-
+                if(UI_commanderColors == "")
+                    return "WBGUR";
                 return UI_commanderColors;
             }
             async function getKeywords() {
@@ -161,6 +156,19 @@
                         resolve();
                     }, 1000);
                 });
+            }
+
+            function cleanCardName(cardName)
+            {
+                if (cardName.indexOf(" //") != -1) {
+                    let pos = cardName.indexOf(" //");
+                    cardName = cardName.substring(0, pos);
+                }
+                if (cardName.substring(0,2) == "A-")
+                {
+                    cardName=cardName.substring(2);
+                }
+                return cardName;
             }
         })
     </script>
