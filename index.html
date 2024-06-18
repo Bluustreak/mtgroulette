@@ -94,8 +94,8 @@
 
                 async function fetchCommander() {
 
-                    const response = fetch(`https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature${KW}&sorting=${sorting}&order=${order}`); // returns a promise
-                    const fetchedCards = await response; // waits until the resonse is fetched
+                    let response = fetch(`https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature${KW}&sorting=${sorting}&order=${order}`); // returns a promise
+                    let fetchedCards = await response; // waits until the resonse is fetched
                     if (fetchedCards.status != 200) {
                         console.log(`\ncould not find enough cards for <commander>, skipping keywords\n`)
                         response = fetch(`https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature&sorting=${sorting}&order=${order}`); // returns a promise
