@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <title>Scryfall Deck Generator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-
     <div class="container" style="padding:20px;">
         <div class="row">
             <div class="col">
@@ -41,12 +38,10 @@
                         </div>
                         </br>
                         <h1 class="title">Keywords</h1>
-                        <input id="id_keywordsTextField" type="text" value="" placeholder="Enter keywords here">
-                        <h8>(be very careful)</h8>
+                        <input id="id_keywordsTextField" type="text" value="" placeholder="tip: Be VERY broad" >
                     </div>
                     </br>
-                    <center><button id="id_clickButton" class="btn btn-primary">Generate Deck</button>
-                    </center>
+                    <center><button id="id_clickButton" class="btn btn-primary">Generate Deck</button></center>
                 </form>
             </div>
             <div class="col">
@@ -58,113 +53,117 @@
 
 
     <script>
-
         document.getElementById('id_clickButton').addEventListener('click', function (event) {
-            event.preventDefault(); // Prevents the default behavior of the button click (such as form submission)
+                event.preventDefault(); // Prevents the default behavior of the button click (such as form submission)
 
-            let UI_KW = (document.getElementById("id_keywordsTextField").value).split(' ');
-            let KW = "";
-            for (let kwn = 0; kwn < UI_KW.length; kwn++) {
-                if (UI_KW[kwn] != "")
-                    KW += `+lore%3A${UI_KW[kwn]}`;
+            let deckElement = document.getElementById("deck");
+
+            async function createDeck() 
+            {
+                let order = "asc";
+                let sorting = "cmc";
+                KW = await getKeywords();
+                UI_commanderColors = await getCommanderColors();
+
+                // all the card fetching functions:
+                async function fetchCardtype(cardtype, amount) {
+                    
+                    await waitAsecond();
+
+                    let response = fetch(`https://api.scryfall.com/cards/search?q=commander:${UI_commanderColors}+t:${cardtype}${KW}&sorting=${sorting}&order=${order}`); // returns a promise
+                    let fetchedCards = await response; // waits until the resonse is fetched
+                    if (fetchedCards.status != 200) {
+                        console.log(`\ncould not find enough cards for <${cardtype}>, skipping keywords\n`)
+                        response = fetch(`https://api.scryfall.com/cards/search?q=commander:${UI_commanderColors}+t:${cardtype}&sorting=${sorting}&order=${order}`); // returns a promise
+                        fetchedCards = await response; // waits until the new resonse is fetched
+                    }
+                    const fetchedCardsJSON = await fetchedCards.json();
+                    const cards = fetchedCardsJSON['data'];
+
+                    deckElement.value += `\n${cardtype}:\n`;
+                    for(let n = 0; n<amount; n++)
+                    {
+                        let cardName = cards[Math.floor(Math.random() * cards.length)].name;
+                        if(cardName.indexOf(" //") != -1){
+                            let pos = cardName.indexOf(" //");
+                            cardName = cardName.substring(0, pos);
+                        }
+                        if (deckElement.value.indexOf(cardName) == -1)
+                            deckElement.value += `1x ${cardName} \n`;
+                    }
+                    
+                }
+                
+
+                async function fetchCommander() {
+
+                    const response = fetch(`https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature${KW}&sorting=${sorting}&order=${order}`); // returns a promise
+                    const fetchedCards = await response; // waits until the resonse is fetched
+                    const fetchedCardsJSON = await fetchedCards.json();
+                    const cards = fetchedCardsJSON['data'];
+                    const randNum = Math.floor(Math.random() * cards.length);
+                    let cardName = cards[randNum].name;
+                    if (cardName.indexOf(" //") != -1) {
+                        let pos = cardName.indexOf(" //");
+                        cardName = cardName.substring(0, pos);
+                    }
+                    deckElement.value += `1x ${cardName} *CMDR*\n`;
+                }
+
+                // all the function calls:
+                fetchCommander()
+                await fetchCardtype("creature", 29);
+                await fetchCardtype("sorcery", 12);
+                await fetchCardtype("artifact", 9);
+                await fetchCardtype("instant", 5);
+                await fetchCardtype("enchantment", 4);
+                await fetchCardtype("planeswalker", 1);
+            }
+            createDeck();
+
+            async function getCommanderColors()
+            {
+                let UI_commanderColors = "";
+
+                let checkboxW = document.getElementById("CBW");
+                let checkboxB = document.getElementById("CBB");
+                let checkboxG = document.getElementById("CBG");
+                let checkboxU = document.getElementById("CBU");
+                let checkboxR = document.getElementById("CBR");
+
+                if (checkboxW.checked) UI_commanderColors += "W";
+                if (checkboxB.checked) UI_commanderColors += "B";
+                if (checkboxG.checked) UI_commanderColors += "G";
+                if (checkboxU.checked) UI_commanderColors += "U";
+                if (checkboxR.checked) UI_commanderColors += "R";
+
+                return UI_commanderColors;
+            }
+            async function getKeywords() {
+                return new Promise((resolve, reject) => {
+                    try {
+                        let UI_KW = (document.getElementById("id_keywordsTextField").value).split(' ');
+                        let KW = "";
+                        for (let kwn = 0; kwn < UI_KW.length; kwn++) {
+                            if (UI_KW[kwn] !== "")
+                                KW += `+lore%3A${UI_KW[kwn]}`;
+                        }
+                        resolve(KW);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
             }
 
-            let UI_commanderColors = "";
-            let sorting = "asc";
-            let order = "cmc"
-            let deck = [];
-
-            let checkboxW = document.getElementById("CBW");
-            let checkboxB = document.getElementById("CBB");
-            let checkboxG = document.getElementById("CBG");
-            let checkboxU = document.getElementById("CBU");
-            let checkboxR = document.getElementById("CBR");
-
-            if (checkboxW.checked) UI_commanderColors += "W";
-            if (checkboxB.checked) UI_commanderColors += "B";
-            if (checkboxG.checked) UI_commanderColors += "G";
-            if (checkboxU.checked) UI_commanderColors += "U";
-            if (checkboxR.checked) UI_commanderColors += "R";
-
-            if (UI_commanderColors != "") {
-
-
-
-
-
-                //http://date.jsontest.com
-                async function fetchCards(url) {
-                    try {
-                        let response = await fetch(url);
-                        console.log('await:', response.status.toString());
-                        if (!response.ok) {
-                            document.getElementById("id_clickButton").innerHTML = "ERROR";
-                        }
-                        let data = await response.json();
-                        return data;
-                    }
-                    catch (error) {
-                        console.error('Error fetching data:', error);
-                    }
-                }
-
-                async function printCards(apiUrls) {
-                    for (let i = 0; i < apiUrls.length; i++) // apiUrls[x] is the [card api url, card amount]
-                    {
-                        setTimeout(async () => {
-                            let pageOfCards = await fetchCards(apiUrls[i][0]);
-                            for (let cardAmount = 0; cardAmount < apiUrls[i][1]; cardAmount++) // apiUrls[i] is current card type
-                            {
-                                let randNum = Math.floor(Math.random() * pageOfCards['data'].length) // rand up to the the amount of cards found
-                                let cardName = pageOfCards['data'][randNum]['name'];
-                                if (!deck.includes(cardName)) {
-                                    deck.push(cardName);
-                                    //console.log(cardName);
-                                    if (cardName.includes(" //")) {
-                                        let pos = cardName.indexOf(" //")
-                                        cardName=cardName.substring(0, pos);
-
-                                    }
-                            
-                                    if (i == 0)
-                                        cardName += " *CMDR*";
-                                    cardName += "\n";
-
-                                    document.getElementById("deck").value += cardName;
-                                }
-                            }
-
-                        }, i * 500); // 0.1 second = 100 milliseconds
-                    }
-                }
-
-                let n_cre = 29;
-                let n_sor = 12;
-                let n_art = 9;
-                let n_ins = 5;
-                let n_enc = 4;
-                let n_pla = 1;
-                let api_commander = [`https://api.scryfall.com/cards/search?q=c=${UI_commanderColors}+t:legendary+t:creature${KW}&sorting=${sorting}&order=${order}`, 1];
-                let api_creatures = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:creature${KW}&sorting=${sorting}&order=${order}`, 29];
-                let api_artifacts = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:artifact${KW}&sorting=${sorting}&order=${order}`, 9];
-                let api_instants = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:instant${KW}&sorting=${sorting}&order=${order}`, 5];
-                let api_enchantments = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:enchantment${KW}&sorting=${sorting}&order=${order}`, 4];
-                let api_sorceries = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:sorcery${KW}&sorting=${sorting}&order=${order}`, 12];
-                let api_planeswalkers = [`https://api.scryfall.com/cards/search?q=commander=${UI_commanderColors}+t:planeswalker${KW}&sorting=${sorting}&order=${order}`, 1];
-
-                printCards([
-                    api_commander,
-                    api_creatures,
-                    api_artifacts,
-                    api_enchantments,
-                    api_instants,
-                    api_sorceries,
-                    api_planeswalkers
-                ]);
+            function waitAsecond() {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        resolve();
+                    }, 1000);
+                });
             }
         })
-
     </script>
+    
 </body>
-
 </html>
